@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PassGen">
+<title>PassGen</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0f12;
+    --surface:  #161a20;
+    --card:     #1e2330;
+    --border:   rgba(255,255,255,0.08);
+    --text:     #f0f2f5;
+    --muted:    #7a8394;
+    --accent:   #4ade80;
+    --accent2:  #22d3ee;
+    --danger:   #f87171;
+    --warn:     #fb923c;
+    --mono:     'DM Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    width: 100%;
+    max-width: 480px;
+    padding: 52px 24px 8px;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo svg { width: 20px; height: 20px; }
+  header h1 {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  header span {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+    padding-bottom: 3px;
+    font-family: var(--mono);
+  }
+
+  /* ── Main ── */
+  main {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ── Password Output ── */
+  .pwd-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .pwd-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 10px;
+  }
+  .pwd-display {
+    font-family: var(--mono);
+    font-size: clamp(14px, 4vw, 18px);
+    letter-spacing: 1px;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.6;
+    min-height: 28px;
+  }
+  .pwd-display.empty { color: var(--muted); font-size: 14px; }
+
+  .pwd-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .strength-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    transition: all 0.3s ease;
+  }
+  .strength-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s ease;
+  }
+  .copy-btn {
+    background: var(--accent);
+    color: #0d0f12;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .copy-btn:active { opacity: 0.7; transform: scale(0.97); }
+  .copy-btn.copied { background: var(--accent2); }
+
+  /* ── Section Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 16px;
+  }
+
+  /* ── Length Slider ── */
+  .length-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .length-num {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.15); }
+  .length-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* ── Toggles ── */
+  .toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info { display: flex; flex-direction: column; gap: 2px; }
+  .toggle-label {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .toggle-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .switch {
+    position: relative;
+    width: 46px; height: 26px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider-sw {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 26px;
+    transition: background 0.25s;
+    cursor: pointer;
+  }
+  .slider-sw::before {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s;
+  }
+  .switch input:checked + .slider-sw { background: var(--accent); }
+  .switch input:checked + .slider-sw::before { transform: translateX(20px); }
+
+  /* ── Tips ── */
+  .tips-box {
+    background: rgba(251,146,60,0.08);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: none;
+  }
+  .tips-box.visible { display: block; }
+  .tip-item {
+    font-size: 13px;
+    color: var(--warn);
+    line-height: 1.5;
+    padding: 2px 0;
+  }
+  .tip-item::before { content: '↳ '; opacity: 0.6; }
+
+  /* ── Generate Button ── */
+  .gen-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0d0f12;
+    border: none;
+    border-radius: 14px;
+    padding: 17px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: opacity 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gen-btn:active { opacity: 0.8; transform: scale(0.99); }
+
+  /* ── Footer note ── */
+  .note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    padding: 0 24px;
+    line-height: 1.6;
+  }
+  .note strong { color: var(--accent); font-weight: 500; }
+
+  /* ── Error ── */
+  .error-box {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--danger);
+    display: none;
+  }
+  .error-box.visible { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#0d0f12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  </div>
+  <h1>PassGen</h1>
+  <span>offline</span>
+</header>
+
+<main>
+
+  <!-- Output -->
+  <div class="pwd-box">
+    <div class="pwd-label">Generated password</div>
+    <div class="pwd-display empty" id="pwdDisplay">Tap generate to create a password</div>
+    <div class="pwd-actions">
+      <div class="strength-pill" id="strengthPill">
+        <div class="dot" id="strengthDot"></div>
+        <span id="strengthLabel">—</span>
+      </div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPassword()">Copy</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Tips -->
+  <div class="tips-box" id="tipsBox"></div>
+
+  <!-- Length -->
+  <div class="card">
+    <div class="card-title">Password length</div>
+    <div class="length-row">
+      <input type="range" id="lengthSlider" min="4" max="64" value="16" oninput="updateLength()">
+      <div class="length-num" id="lengthNum">16</div>
+    </div>
+    <div class="length-hint" id="lengthHint">16 characters — good length</div>
+  </div>
+
+  <!-- Character types -->
+  <div class="card">
+    <div class="card-title">Character types</div>
+    <div class="toggle-list">
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Uppercase letters</span>
+          <span class="toggle-sub">A B C … Z</span>
+        </div>
+        <div class="switch"><input type="checkbox" id="useUpper" checked><span class="slider-sw"></span></div>
+      </label>
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Lowercase letters</span>
+          <span class="toggle-sub">a b c … z</span>
+        </div>
+        <div class="switch"><input type="checkbox" id="useLower" checked><span class="slider-sw"></span></div>
+      </label>
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Numbers</span>
+          <span class="toggle-sub">0 1 2 … 9</span>
+        </div>
+        <div class="switch"><input type="checkbox" id="useDigits" checked><span class="slider-sw"></span></div>
+      </label>
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Symbols</span>
+          <span class="toggle-sub">! @ # $ % ^ &amp; * …</span>
+        </div>
+        <div class="switch"><input type="checkbox" id="useSymbols" checked><span class="slider-sw"></span></div>
+      </label>
+      <label class="toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">Exclude ambiguous</span>
+          <span class="toggle-sub">removes 0 O l 1 I |</span>
+        </div>
+        <div class="switch"><input type="checkbox" id="exclAmbig" checked><span class="slider-sw"></span></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <button class="gen-btn" onclick="generate()">Generate password</button>
+
+  <p class="note">
+    Uses <strong>crypto.getRandomValues</strong> — the same level of security as Python's secrets module.<br>
+    Nothing leaves your device.
+  </p>
+
+</main>
+
+<script>
+const AMBIGUOUS = new Set(['0','O','l','1','I','|']);
+let currentPassword = '';
+
+function buildPool(upper, lower, digits, symbols, exclAmbig) {
+  const UP  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const LO  = 'abcdefghijklmnopqrstuvwxyz';
+  const DI  = '0123456789';
+  const SY  = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+  let pool = '';
+  if (upper)   pool += UP;
+  if (lower)   pool += LO;
+  if (digits)  pool += DI;
+  if (symbols) pool += SY;
+  if (exclAmbig) pool = pool.split('').filter(c => !AMBIGUOUS.has(c)).join('');
+  return pool;
+}
+
+function secureRandInt(max) {
+  const arr = new Uint32Array(1);
+  let result;
+  do {
+    crypto.getRandomValues(arr);
+    result = arr[0];
+  } while (result >= Math.floor(0xFFFFFFFF / max) * max);
+  return result % max;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = secureRandInt(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function generate() {
+  const upper   = document.getElementById('useUpper').checked;
+  const lower   = document.getElementById('useLower').checked;
+  const digits  = document.getElementById('useDigits').checked;
+  const symbols = document.getElementById('useSymbols').checked;
+  const excl    = document.getElementById('exclAmbig').checked;
+  const length  = parseInt(document.getElementById('lengthSlider').value);
+
+  const errorBox = document.getElementById('errorBox');
+  errorBox.classList.remove('visible');
+
+  if (!upper && !lower && !digits && !symbols) {
+    errorBox.textContent = 'Please enable at least one character type.';
+    errorBox.classList.add('visible');
+    return;
+  }
+
+  const UP  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const LO  = 'abcdefghijklmnopqrstuvwxyz';
+  const DI  = '0123456789';
+  const SY  = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+
+  let typePools = [];
+  if (upper)   typePools.push(UP);
+  if (lower)   typePools.push(LO);
+  if (digits)  typePools.push(DI);
+  if (symbols) typePools.push(SY);
+
+  if (excl) typePools = typePools.map(p => p.split('').filter(c => !AMBIGUOUS.has(c)).join('')).filter(p => p.length > 0);
+
+  if (length < typePools.length) {
+    errorBox.textContent = `Password length (${length}) must be at least ${typePools.length} to include every selected character type.`;
+    errorBox.classList.add('visible');
+    return;
+  }
+
+  const fullPool = buildPool(upper, lower, digits, symbols, excl);
+  let chars = typePools.map(p => p[secureRandInt(p.length)]);
+  while (chars.length < length) chars.push(fullPool[secureRandInt(fullPool.length)]);
+  shuffle(chars);
+
+  currentPassword = chars.join('');
+
+  const display = document.getElementById('pwdDisplay');
+  display.textContent = currentPassword;
+  display.classList.remove('empty');
+
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.textContent = 'Copy';
+  copyBtn.classList.remove('copied');
+
+  updateStrength(length, upper, lower, digits, symbols);
+}
+
+function updateStrength(length, upper, lower, digits, symbols) {
+  const types = [upper, lower, digits, symbols].filter(Boolean).length;
+  let score = 0;
+  if (length >= 12) score++;
+  if (length >= 16) score++;
+  if (length >= 20) score++;
+  score += types;
+
+  let label, color, tips = [];
+  if (score <= 2)      { label = 'Weak';        color = '#f87171'; }
+  else if (score <= 4) { label = 'Fair';         color = '#fb923c'; }
+  else if (score <= 5) { label = 'Strong';       color = '#4ade80'; }
+  else                 { label = 'Very strong';  color = '#22d3ee'; }
+
+  if (length < 12)    tips.push('Increase length to at least 12 characters');
+  if (types < 3)      tips.push('Enable more character types for stronger passwords');
+  if (!symbols)       tips.push('Adding symbols greatly increases strength');
+
+  document.getElementById('strengthLabel').textContent = label;
+  document.getElementById('strengthDot').style.background = color;
+  document.getElementById('strengthLabel').style.color = color;
+
+  const tipsBox = document.getElementById('tipsBox');
+  if (tips.length > 0) {
+    tipsBox.innerHTML = tips.map(t => `<div class="tip-item">${t}</div>`).join('');
+    tipsBox.classList.add('visible');
+  } else {
+    tipsBox.classList.remove('visible');
+  }
+}
+
+function copyPassword() {
+  if (!currentPassword) return;
+  navigator.clipboard.writeText(currentPassword).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function updateLength() {
+  const val = parseInt(document.getElementById('lengthSlider').value);
+  document.getElementById('lengthNum').textContent = val;
+  let hint = '';
+  if (val < 8)       hint = val + ' characters — very short, not recommended';
+  else if (val < 12) hint = val + ' characters — acceptable for low-risk accounts';
+  else if (val < 16) hint = val + ' characters — good length';
+  else if (val < 24) hint = val + ' characters — very good';
+  else               hint = val + ' characters — excellent';
+  document.getElementById('lengthHint').textContent = hint;
+}
+</script>
+</body>
+</html>
