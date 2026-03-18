@@ -5,553 +5,765 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PassGen">
-<title>PassGen</title>
+<meta name="apple-mobile-web-app-title" content="FamKit">
+<title>FamKit</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #0d0f12;
+  --card:    #1e2330;
+  --border:  rgba(255,255,255,0.08);
+  --text:    #f0f2f5;
+  --muted:   #7a8394;
+  --accent:  #4ade80;
+  --accent2: #22d3ee;
+  --warn:    #fb923c;
+  --danger:  #f87171;
+  --sale:    #c084fc;
+  --mono:    'DM Mono', monospace;
+  --sans:    'DM Sans', sans-serif;
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--sans); min-height: 100dvh;
+  display: flex; flex-direction: column; align-items: center;
+  padding-bottom: 48px; -webkit-font-smoothing: antialiased;
+}
 
-  :root {
-    --bg:       #0d0f12;
-    --surface:  #161a20;
-    --card:     #1e2330;
-    --border:   rgba(255,255,255,0.08);
-    --text:     #f0f2f5;
-    --muted:    #7a8394;
-    --accent:   #4ade80;
-    --accent2:  #22d3ee;
-    --danger:   #f87171;
-    --warn:     #fb923c;
-    --mono:     'DM Mono', monospace;
-    --sans:     'DM Sans', sans-serif;
-  }
+/* NAV */
+.nav-wrap { width:100%; max-width:480px; padding:52px 16px 0; position:relative; z-index:100; }
+.nav-btn {
+  width:100%; background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px 18px;
+  display:flex; align-items:center; gap:12px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; transition:border-color .2s;
+}
+.nav-btn:hover, .nav-btn.open { border-color:rgba(255,255,255,.18); }
+.nav-btn.open { border-radius:14px 14px 0 0; }
+.nav-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.nav-title { font-family:var(--mono); font-size:17px; font-weight:500; color:var(--text); flex:1; text-align:left; }
+.nav-chevron { color:var(--muted); font-size:12px; transition:transform .25s; }
+.nav-btn.open .nav-chevron { transform:rotate(180deg); }
+.nav-dropdown {
+  position:absolute; top:100%; left:16px; right:16px;
+  background:var(--card); border:1px solid rgba(255,255,255,.18);
+  border-top:none; border-radius:0 0 14px 14px;
+  overflow:hidden; max-height:0; transition:max-height .3s ease;
+}
+.nav-dropdown.open { max-height:360px; }
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:13px 18px; cursor:pointer;
+  border-top:1px solid var(--border);
+  -webkit-tap-highlight-color:transparent; transition:background .15s;
+}
+.nav-item:hover { background:rgba(255,255,255,.04); }
+.nav-item.active { background:rgba(255,255,255,.06); }
+.nav-item-label { font-size:15px; font-weight:500; color:var(--text); }
+.nav-item-sub { font-size:12px; color:var(--muted); font-family:var(--mono); margin-left:auto; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 0 40px;
-    -webkit-font-smoothing: antialiased;
-  }
+/* MAIN */
+main { width:100%; max-width:480px; padding:16px 16px 0; display:flex; flex-direction:column; gap:14px; }
+.tool { display:none; flex-direction:column; gap:14px; }
+.tool.active { display:flex; }
 
-  /* ── Header ── */
-  header {
-    width: 100%;
-    max-width: 480px;
-    padding: 52px 24px 8px;
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-  }
-  .logo {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .logo svg { width: 20px; height: 20px; }
-  header h1 {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-  header span {
-    font-size: 13px;
-    color: var(--muted);
-    margin-left: auto;
-    padding-bottom: 3px;
-    font-family: var(--mono);
-  }
+/* CARDS */
+.card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; }
+.card-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin-bottom:14px; }
 
-  /* ── Main ── */
-  main {
-    width: 100%;
-    max-width: 480px;
-    padding: 20px 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
+/* FIELDS */
+.field { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.field:last-child { margin-bottom:0; }
+.field label { font-size:13px; color:var(--muted); font-family:var(--mono); }
+.field input, .field select {
+  background:rgba(255,255,255,.05); border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px; font-size:16px;
+  color:var(--text); font-family:var(--sans); outline:none; width:100%;
+  transition:border-color .2s; -webkit-appearance:none; appearance:none;
+}
+.field input:focus, .field select:focus { border-color:rgba(255,255,255,.25); }
+/* Fix dropdown option text readability on all browsers */
+.field select option { background:#1e2330; color:#f0f2f5; }
 
-  /* ── Password Output ── */
-  .pwd-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-  }
-  .pwd-label {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: var(--mono);
-    margin-bottom: 10px;
-  }
-  .pwd-display {
-    font-family: var(--mono);
-    font-size: clamp(14px, 4vw, 18px);
-    letter-spacing: 1px;
-    color: var(--accent);
-    word-break: break-all;
-    line-height: 1.6;
-    min-height: 28px;
-  }
-  .pwd-display.empty { color: var(--muted); font-size: 14px; }
+/* RESULT */
+.result-box { background:rgba(74,222,128,.07); border:1px solid rgba(74,222,128,.2); border-radius:12px; padding:16px; text-align:center; }
+.result-value { font-family:var(--mono); font-size:28px; font-weight:500; color:var(--accent); }
+.result-label { font-size:13px; color:var(--muted); margin-top:4px; font-family:var(--mono); }
 
-  .pwd-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-  }
-  .strength-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-family: var(--mono);
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.05);
-    color: var(--muted);
-    transition: all 0.3s ease;
-  }
-  .strength-pill .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s ease;
-  }
-  .copy-btn {
-    background: var(--accent);
-    color: #0d0f12;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 18px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: var(--sans);
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .copy-btn:active { opacity: 0.7; transform: scale(0.97); }
-  .copy-btn.copied { background: var(--accent2); }
+/* RANGE */
+input[type=range] { -webkit-appearance:none; width:100%; height:4px; border-radius:4px; background:rgba(255,255,255,.1); outline:none; cursor:pointer; border:none; padding:0; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--accent); cursor:pointer; }
 
-  /* ── Section Card ── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-  }
-  .card-title {
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: var(--mono);
-    margin-bottom: 16px;
-  }
+/* BUTTONS */
+.btn-primary { width:100%; background:var(--accent); color:#0d0f12; border:none; border-radius:14px; padding:17px; font-size:16px; font-weight:600; font-family:var(--sans); cursor:pointer; transition:opacity .15s,transform .1s; -webkit-tap-highlight-color:transparent; }
+.btn-primary:active { opacity:.8; transform:scale(.99); }
+.btn-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+.btn-tip { background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:10px 4px; font-size:15px; font-weight:500; color:var(--muted); cursor:pointer; font-family:var(--sans); transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.btn-tip.active { background:rgba(74,222,128,.12); border-color:rgba(74,222,128,.4); color:var(--accent); }
 
-  /* ── Length Slider ── */
-  .length-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 4px;
-  }
-  .length-num {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--text);
-    min-width: 40px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  input[type=range] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 4px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.1);
-    outline: none;
-    cursor: pointer;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.15); }
-  .length-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* UNIT TABS */
+.unit-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.unit-tab { background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:8px; padding:7px 14px; font-size:13px; font-family:var(--mono); color:var(--muted); cursor:pointer; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.unit-tab.active { background:rgba(74,222,128,.12); border-color:rgba(74,222,128,.4); color:var(--accent); }
 
-  /* ── Toggles ── */
-  .toggle-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .toggle-row:last-child { border-bottom: none; }
-  .toggle-info { display: flex; flex-direction: column; gap: 2px; }
-  .toggle-label {
-    font-size: 15px;
-    color: var(--text);
-    font-weight: 500;
-  }
-  .toggle-sub {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-  .switch {
-    position: relative;
-    width: 46px; height: 26px;
-    flex-shrink: 0;
-  }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider-sw {
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.1);
-    border-radius: 26px;
-    transition: background 0.25s;
-    cursor: pointer;
-  }
-  .slider-sw::before {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    left: 3px; top: 3px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform 0.25s;
-  }
-  .switch input:checked + .slider-sw { background: var(--accent); }
-  .switch input:checked + .slider-sw::before { transform: translateX(20px); }
+/* TWO-WAY CONVERTER */
+.two-way-grid { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; }
+.two-way-arrow { font-size:20px; color:var(--muted); text-align:center; padding-top:20px; user-select:none; }
 
-  /* ── Tips ── */
-  .tips-box {
-    background: rgba(251,146,60,0.08);
-    border: 1px solid rgba(251,146,60,0.2);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: none;
-  }
-  .tips-box.visible { display: block; }
-  .tip-item {
-    font-size: 13px;
-    color: var(--warn);
-    line-height: 1.5;
-    padding: 2px 0;
-  }
-  .tip-item::before { content: '↳ '; opacity: 0.6; }
+/* GROCERY */
+.products-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.product-card { background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.product-card.a-card { border-color:rgba(74,222,128,.2); }
+.product-card.b-card { border-color:rgba(34,211,238,.2); }
+.product-title { font-size:13px; font-weight:600; margin-bottom:10px; font-family:var(--mono); }
+.product-title.a { color:var(--accent); }
+.product-title.b { color:var(--accent2); }
+.product-card .field { margin-bottom:8px; }
+.product-card .field label { font-size:11px; }
+.product-card .field input, .product-card .field select { padding:9px 12px; font-size:14px; }
+.winner-box { border-radius:12px; padding:16px; text-align:center; display:none; }
+.winner-box.visible { display:block; }
+.winner-box.win-a { background:rgba(74,222,128,.07); border:1px solid rgba(74,222,128,.2); }
+.winner-box.win-b { background:rgba(34,211,238,.07); border:1px solid rgba(34,211,238,.2); }
+.winner-box.win-tie { background:rgba(251,146,60,.07); border:1px solid rgba(251,146,60,.2); }
+.winner-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+.winner-sub { font-size:13px; color:var(--muted); font-family:var(--mono); }
 
-  /* ── Generate Button ── */
-  .gen-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #0d0f12;
-    border: none;
-    border-radius: 14px;
-    padding: 17px;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: var(--sans);
-    cursor: pointer;
-    letter-spacing: 0.2px;
-    transition: opacity 0.15s, transform 0.1s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .gen-btn:active { opacity: 0.8; transform: scale(0.99); }
+/* TIP GRID */
+.tip-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.tip-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+.tip-card-val { font-family:var(--mono); font-size:22px; font-weight:500; color:var(--accent); }
+.tip-card-lbl { font-size:12px; color:var(--muted); margin-top:4px; font-family:var(--mono); }
+.per-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
 
-  /* ── Footer note ── */
-  .note {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    font-family: var(--mono);
-    padding: 0 24px;
-    line-height: 1.6;
-  }
-  .note strong { color: var(--accent); font-weight: 500; }
+/* INLINE TIP PREVIEW */
+.tip-preview { display:none; background:rgba(74,222,128,.07); border:1px solid rgba(74,222,128,.2); border-radius:12px; padding:14px 18px; }
+.tip-preview.visible { display:flex; align-items:center; justify-content:space-between; }
+.tip-preview-lbl { font-size:13px; color:var(--muted); font-family:var(--mono); }
+.tip-preview-val { font-family:var(--mono); font-size:20px; font-weight:500; color:var(--accent); }
 
-  /* ── Error ── */
-  .error-box {
-    background: rgba(248,113,113,0.08);
-    border: 1px solid rgba(248,113,113,0.2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--danger);
-    display: none;
-  }
-  .error-box.visible { display: block; }
+/* PASSWORD */
+.pwd-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.pwd-header-content { flex:1; }
+.pwd-display { font-family:var(--mono); font-size:clamp(14px,4vw,18px); letter-spacing:1px; color:var(--accent); word-break:break-all; line-height:1.6; min-height:28px; }
+.pwd-display.empty { color:var(--muted); font-size:14px; letter-spacing:0; }
+.reload-btn {
+  background:rgba(255,255,255,.05); border:1px solid var(--border);
+  border-radius:10px; width:38px; height:38px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:17px; transition:background .15s, transform .3s;
+  -webkit-tap-highlight-color:transparent;
+}
+.reload-btn:hover { background:rgba(255,255,255,.1); }
+.reload-btn:active { transform:rotate(180deg); }
+.pwd-actions { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.strength-pill { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-family:var(--mono); padding:4px 10px; border-radius:20px; background:rgba(255,255,255,.05); color:var(--muted); }
+.strength-pill .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); }
+.copy-btn { background:var(--accent); color:#0d0f12; border:none; border-radius:10px; padding:8px 18px; font-size:14px; font-weight:600; font-family:var(--sans); cursor:pointer; transition:opacity .15s; -webkit-tap-highlight-color:transparent; }
+.copy-btn:active { opacity:.7; }
+.copy-btn.copied { background:var(--accent2); }
+.length-row { display:flex; align-items:center; gap:14px; margin-bottom:4px; }
+.length-num { font-family:var(--mono); font-size:28px; font-weight:500; color:var(--text); min-width:40px; text-align:right; flex-shrink:0; }
+.length-hint { font-size:12px; color:var(--muted); margin-top:6px; }
+.toggle-list { display:flex; flex-direction:column; gap:4px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-info { display:flex; flex-direction:column; gap:2px; }
+.toggle-label { font-size:15px; color:var(--text); font-weight:500; }
+.toggle-sub { font-size:12px; color:var(--muted); font-family:var(--mono); }
+.switch { position:relative; width:46px; height:26px; flex-shrink:0; }
+.switch input { opacity:0; width:0; height:0; }
+.slider-sw { position:absolute; inset:0; background:rgba(255,255,255,.1); border-radius:26px; transition:background .25s; cursor:pointer; }
+.slider-sw::before { content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .25s; }
+.switch input:checked + .slider-sw { background:var(--accent); }
+.switch input:checked + .slider-sw::before { transform:translateX(20px); }
+.error-box { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.2); border-radius:12px; padding:12px 16px; font-size:13px; color:var(--danger); display:none; }
+.error-box.visible { display:block; }
+.tips-box { background:rgba(251,146,60,.08); border:1px solid rgba(251,146,60,.2); border-radius:12px; padding:14px 16px; display:none; }
+.tips-box.visible { display:block; }
+.tip-item-warn { font-size:13px; color:var(--warn); line-height:1.5; padding:2px 0; }
+.tip-item-warn::before { content:'↳ '; opacity:.6; }
+.note { text-align:center; font-size:12px; color:var(--muted); font-family:var(--mono); padding:0 24px; line-height:1.6; }
+.note strong { color:var(--accent); font-weight:500; }
+
+/* SALE CALCULATOR */
+.sale-result-box { background:rgba(192,132,252,.07); border:1px solid rgba(192,132,252,.25); border-radius:12px; padding:20px; text-align:center; display:none; }
+.sale-result-box.visible { display:block; }
+.sale-final { font-family:var(--mono); font-size:36px; font-weight:500; color:var(--sale); }
+.sale-final-lbl { font-size:13px; color:var(--muted); font-family:var(--mono); margin-top:4px; }
+.sale-breakdown { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.sale-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; }
+.sale-card-val { font-family:var(--mono); font-size:18px; font-weight:500; }
+.sale-card-lbl { font-size:12px; color:var(--muted); margin-top:3px; font-family:var(--mono); }
+.sale-pct-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+.sale-pct-btn { background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:10px; padding:10px 4px; font-size:15px; font-weight:500; color:var(--muted); cursor:pointer; font-family:var(--sans); transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.sale-pct-btn.active { background:rgba(192,132,252,.12); border-color:rgba(192,132,252,.4); color:var(--sale); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#0d0f12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
+<!-- NAV -->
+<div class="nav-wrap">
+  <div class="nav-btn" id="navBtn" onclick="toggleNav()">
+    <div class="nav-icon" id="navIcon" style="background:rgba(74,222,128,.15)">🔐</div>
+    <span class="nav-title" id="navTitle">Password generator</span>
+    <span class="nav-chevron">▼</span>
   </div>
-  <h1>PassGen</h1>
-  <span>offline</span>
-</header>
+  <div class="nav-dropdown" id="navDropdown">
+    <div class="nav-item active" data-tool="password" onclick="switchTool('password','🔐','Password generator','rgba(74,222,128,.15)')">
+      <div class="nav-icon" style="background:rgba(74,222,128,.15)">🔐</div>
+      <span class="nav-item-label">Password generator</span>
+      <span class="nav-item-sub">secure</span>
+    </div>
+    <div class="nav-item" data-tool="converter" onclick="switchTool('converter','🌡️','Unit converter','rgba(34,211,238,.15)')">
+      <div class="nav-icon" style="background:rgba(34,211,238,.15)">🌡️</div>
+      <span class="nav-item-label">Unit converter</span>
+      <span class="nav-item-sub">temp · dist · weight · cooking</span>
+    </div>
+    <div class="nav-item" data-tool="grocery" onclick="switchTool('grocery','🛒','Grocery comparator','rgba(251,146,60,.15)')">
+      <div class="nav-icon" style="background:rgba(251,146,60,.15)">🛒</div>
+      <span class="nav-item-label">Grocery comparator</span>
+      <span class="nav-item-sub">best value per kg</span>
+    </div>
+    <div class="nav-item" data-tool="tip" onclick="switchTool('tip','💰','Tip calculator','rgba(248,113,113,.15)')">
+      <div class="nav-icon" style="background:rgba(248,113,113,.15)">💰</div>
+      <span class="nav-item-label">Tip calculator</span>
+      <span class="nav-item-sub">split the bill</span>
+    </div>
+    <div class="nav-item" data-tool="sale" onclick="switchTool('sale','🏷️','Sale price calculator','rgba(192,132,252,.15)')">
+      <div class="nav-icon" style="background:rgba(192,132,252,.15)">🏷️</div>
+      <span class="nav-item-label">Sale price calculator</span>
+      <span class="nav-item-sub">discount & savings</span>
+    </div>
+  </div>
+</div>
 
 <main>
 
-  <!-- Output -->
-  <div class="pwd-box">
-    <div class="pwd-label">Generated password</div>
-    <div class="pwd-display empty" id="pwdDisplay">Tap generate to create a password</div>
+<!-- ══════════════════ PASSWORD ══════════════════ -->
+<div class="tool active" id="tool-password">
+  <div class="card">
+    <div class="card-label">Generated password</div>
+    <!-- CHANGE 1: reload button next to output -->
+    <div class="pwd-header">
+      <div class="pwd-header-content">
+        <div class="pwd-display empty" id="pwdDisplay">Tap generate to create a password</div>
+      </div>
+      <div class="reload-btn" onclick="generatePassword()" title="Regenerate">↻</div>
+    </div>
     <div class="pwd-actions">
-      <div class="strength-pill" id="strengthPill">
+      <div class="strength-pill">
         <div class="dot" id="strengthDot"></div>
         <span id="strengthLabel">—</span>
       </div>
       <button class="copy-btn" id="copyBtn" onclick="copyPassword()">Copy</button>
     </div>
   </div>
-
-  <!-- Error -->
-  <div class="error-box" id="errorBox"></div>
-
-  <!-- Tips -->
-  <div class="tips-box" id="tipsBox"></div>
-
-  <!-- Length -->
+  <div class="error-box" id="pwdError"></div>
+  <div class="tips-box" id="pwdTips"></div>
   <div class="card">
-    <div class="card-title">Password length</div>
+    <div class="card-label">Password length</div>
     <div class="length-row">
       <input type="range" id="lengthSlider" min="4" max="64" value="16" oninput="updateLength()">
       <div class="length-num" id="lengthNum">16</div>
     </div>
     <div class="length-hint" id="lengthHint">16 characters — good length</div>
   </div>
-
-  <!-- Character types -->
   <div class="card">
-    <div class="card-title">Character types</div>
+    <div class="card-label">Character types</div>
     <div class="toggle-list">
       <label class="toggle-row">
-        <div class="toggle-info">
-          <span class="toggle-label">Uppercase letters</span>
-          <span class="toggle-sub">A B C … Z</span>
-        </div>
+        <div class="toggle-info"><span class="toggle-label">Uppercase letters</span><span class="toggle-sub">A B C … Z</span></div>
         <div class="switch"><input type="checkbox" id="useUpper" checked><span class="slider-sw"></span></div>
       </label>
       <label class="toggle-row">
-        <div class="toggle-info">
-          <span class="toggle-label">Lowercase letters</span>
-          <span class="toggle-sub">a b c … z</span>
-        </div>
+        <div class="toggle-info"><span class="toggle-label">Lowercase letters</span><span class="toggle-sub">a b c … z</span></div>
         <div class="switch"><input type="checkbox" id="useLower" checked><span class="slider-sw"></span></div>
       </label>
       <label class="toggle-row">
-        <div class="toggle-info">
-          <span class="toggle-label">Numbers</span>
-          <span class="toggle-sub">0 1 2 … 9</span>
-        </div>
+        <div class="toggle-info"><span class="toggle-label">Numbers</span><span class="toggle-sub">0 1 2 … 9</span></div>
         <div class="switch"><input type="checkbox" id="useDigits" checked><span class="slider-sw"></span></div>
       </label>
       <label class="toggle-row">
-        <div class="toggle-info">
-          <span class="toggle-label">Symbols</span>
-          <span class="toggle-sub">! @ # $ % ^ &amp; * …</span>
-        </div>
+        <div class="toggle-info"><span class="toggle-label">Symbols</span><span class="toggle-sub">! @ # $ % ^ &amp; * …</span></div>
         <div class="switch"><input type="checkbox" id="useSymbols" checked><span class="slider-sw"></span></div>
       </label>
       <label class="toggle-row">
-        <div class="toggle-info">
-          <span class="toggle-label">Exclude ambiguous</span>
-          <span class="toggle-sub">removes 0 O l 1 I |</span>
-        </div>
+        <div class="toggle-info"><span class="toggle-label">Exclude ambiguous</span><span class="toggle-sub">removes 0 O l 1 I |</span></div>
         <div class="switch"><input type="checkbox" id="exclAmbig" checked><span class="slider-sw"></span></div>
       </label>
     </div>
   </div>
+  <button class="btn-primary" onclick="generatePassword()">Generate password</button>
+  <p class="note">Uses <strong>crypto.getRandomValues</strong> — nothing leaves your device.</p>
+</div>
 
-  <!-- Generate -->
-  <button class="gen-btn" onclick="generate()">Generate password</button>
+<!-- ══════════════════ CONVERTER ══════════════════ -->
+<div class="tool" id="tool-converter">
+  <div class="card">
+    <div class="card-label">Category</div>
+    <div class="unit-tabs">
+      <div class="unit-tab active" onclick="setCategory('temp',this)">Temperature</div>
+      <div class="unit-tab" onclick="setCategory('dist',this)">Distance</div>
+      <div class="unit-tab" onclick="setCategory('weight',this)">Weight</div>
+      <div class="unit-tab" onclick="setCategory('cook',this)">Cooking</div>
+    </div>
 
-  <p class="note">
-    Uses <strong>crypto.getRandomValues</strong> — the same level of security as Python's secrets module.<br>
-    Nothing leaves your device.
-  </p>
+    <!-- TEMPERATURE: two live inputs -->
+    <div id="cat-temp">
+      <div class="two-way-grid">
+        <div class="field" style="margin-bottom:0"><label>Celsius (°C)</label><input type="number" id="tempC" placeholder="°C" oninput="twoWayTemp('c')"></div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0"><label>Fahrenheit (°F)</label><input type="number" id="tempF" placeholder="°F" oninput="twoWayTemp('f')"></div>
+      </div>
+    </div>
+
+    <!-- DISTANCE: two live inputs -->
+    <div id="cat-dist" style="display:none">
+      <div class="two-way-grid">
+        <div class="field" style="margin-bottom:0"><label>Kilometres (km)</label><input type="number" id="distKm" placeholder="km" oninput="twoWayDist('km')"></div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0"><label>Miles (mi)</label><input type="number" id="distMi" placeholder="mi" oninput="twoWayDist('mi')"></div>
+      </div>
+    </div>
+
+    <!-- WEIGHT: two live inputs -->
+    <div id="cat-weight" style="display:none">
+      <div class="two-way-grid">
+        <div class="field" style="margin-bottom:0"><label>Kilograms (kg)</label><input type="number" id="weightKg" placeholder="kg" oninput="twoWayWeight('kg')"></div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0"><label>Pounds (lbs)</label><input type="number" id="weightLbs" placeholder="lbs" oninput="twoWayWeight('lbs')"></div>
+      </div>
+    </div>
+
+    <!-- COOKING: dropdown + two live inputs -->
+    <div id="cat-cook" style="display:none">
+      <div class="two-way-grid">
+        <div class="field" style="margin-bottom:0">
+          <label>Unit A</label>
+          <select id="cookUnitA" onchange="twoWayCook('a')" style="color:#f0f2f5;">
+            <option value="ml" style="color:#f0f2f5;background:#1e2330;">Millilitres (ml)</option>
+            <option value="l" style="color:#f0f2f5;background:#1e2330;">Litres (l)</option>
+            <option value="tsp" style="color:#f0f2f5;background:#1e2330;">Teaspoon (tsp)</option>
+            <option value="tbsp" style="color:#f0f2f5;background:#1e2330;">Tablespoon (tbsp)</option>
+            <option value="cup" style="color:#f0f2f5;background:#1e2330;">Cup</option>
+            <option value="floz" style="color:#f0f2f5;background:#1e2330;">Fl oz</option>
+          </select>
+          <input type="number" id="cookValA" placeholder="Amount" oninput="twoWayCook('a')" style="margin-top:8px;">
+        </div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0">
+          <label>Unit B</label>
+          <select id="cookUnitB" onchange="twoWayCook('b')" style="color:#f0f2f5;">
+            <option value="tsp" style="color:#f0f2f5;background:#1e2330;">Teaspoon (tsp)</option>
+            <option value="tbsp" style="color:#f0f2f5;background:#1e2330;">Tablespoon (tbsp)</option>
+            <option value="cup" style="color:#f0f2f5;background:#1e2330;">Cup</option>
+            <option value="ml" style="color:#f0f2f5;background:#1e2330;">Millilitres (ml)</option>
+            <option value="l" style="color:#f0f2f5;background:#1e2330;">Litres (l)</option>
+            <option value="floz" style="color:#f0f2f5;background:#1e2330;">Fl oz</option>
+          </select>
+          <input type="number" id="cookValB" placeholder="Amount" oninput="twoWayCook('b')" style="margin-top:8px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ GROCERY ══════════════════ -->
+<div class="tool" id="tool-grocery">
+  <div class="card">
+    <div class="card-label">Compare two products</div>
+    <div class="products-grid">
+      <div class="product-card a-card">
+        <div class="product-title a">Product A</div>
+        <div class="field"><label>Price (£)</label><input type="number" id="aPrice" placeholder="1.49" oninput="compareGrocery()"></div>
+        <div class="field"><label>Weight / Vol</label><input type="number" id="aWeight" placeholder="500" oninput="compareGrocery()"></div>
+        <div class="field"><label>Unit</label>
+          <select id="aUnit" onchange="compareGrocery()" style="color:#f0f2f5;">
+            <option value="g" style="color:#f0f2f5;background:#1e2330;">grams (g)</option>
+            <option value="kg" style="color:#f0f2f5;background:#1e2330;">kg</option>
+            <option value="ml" style="color:#f0f2f5;background:#1e2330;">ml</option>
+            <option value="l" style="color:#f0f2f5;background:#1e2330;">litres (l)</option>
+          </select>
+        </div>
+      </div>
+      <div class="product-card b-card">
+        <div class="product-title b">Product B</div>
+        <div class="field"><label>Price (£)</label><input type="number" id="bPrice" placeholder="2.29" oninput="compareGrocery()"></div>
+        <div class="field"><label>Weight / Vol</label><input type="number" id="bWeight" placeholder="900" oninput="compareGrocery()"></div>
+        <div class="field"><label>Unit</label>
+          <select id="bUnit" onchange="compareGrocery()" style="color:#f0f2f5;">
+            <option value="g" style="color:#f0f2f5;background:#1e2330;">grams (g)</option>
+            <option value="kg" style="color:#f0f2f5;background:#1e2330;">kg</option>
+            <option value="ml" style="color:#f0f2f5;background:#1e2330;">ml</option>
+            <option value="l" style="color:#f0f2f5;background:#1e2330;">litres (l)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="winner-box" id="groceryWinner">
+      <div class="winner-title" id="groceryWinTitle"></div>
+      <div class="winner-sub" id="groceryWinSub"></div>
+    </div>
+    <div class="per-grid" id="perGrid" style="display:none">
+      <div class="tip-card"><div class="tip-card-val" id="aPer" style="color:var(--accent)">—</div><div class="tip-card-lbl">A per kg/l</div></div>
+      <div class="tip-card"><div class="tip-card-val" id="bPer" style="color:var(--accent2)">—</div><div class="tip-card-lbl">B per kg/l</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ TIP ══════════════════ -->
+<div class="tool" id="tool-tip">
+  <div class="card">
+    <div class="card-label">Bill amount</div>
+    <div class="field"><label>Total bill (£)</label><input type="number" id="billAmount" placeholder="e.g. 45.00" oninput="calcTip()"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Tip percentage</div>
+    <div class="btn-row">
+      <button class="btn-tip" onclick="setTip(10,this)">10%</button>
+      <button class="btn-tip" onclick="setTip(15,this)">15%</button>
+      <button class="btn-tip active" onclick="setTip(20,this)">20%</button>
+      <button class="btn-tip" onclick="setTip(25,this)">25%</button>
+    </div>
+    <div class="field"><label>Or enter custom %</label><input type="number" id="customTip" placeholder="e.g. 12" oninput="setCustomTip()"></div>
+  </div>
+
+  <!-- CHANGE 3: tip amount preview between percentage and split -->
+  <div class="tip-preview" id="tipPreview">
+    <span class="tip-preview-lbl">Tip amount</span>
+    <span class="tip-preview-val" id="tipPreviewVal">£0.00</span>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Split between</div>
+    <div class="length-row">
+      <input type="range" id="splitSlider" min="1" max="20" value="2" step="1" oninput="updateSplit()">
+      <div class="length-num" id="splitNum">2</div>
+    </div>
+    <div class="length-hint" id="splitHint">Split between 2 people</div>
+  </div>
+  <div class="card" id="tipResults" style="display:none">
+    <div class="card-label">Summary</div>
+    <div class="tip-grid">
+      <div class="tip-card"><div class="tip-card-val" id="tipAmount">£0.00</div><div class="tip-card-lbl">Tip total</div></div>
+      <div class="tip-card"><div class="tip-card-val" id="totalAmount">£0.00</div><div class="tip-card-lbl">Bill + tip</div></div>
+      <div class="tip-card"><div class="tip-card-val" id="perPersonTip">£0.00</div><div class="tip-card-lbl">Tip per person</div></div>
+      <div class="tip-card"><div class="tip-card-val" id="perPersonTotal">£0.00</div><div class="tip-card-lbl">Each person pays</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SALE CALCULATOR ══════════════════ -->
+<div class="tool" id="tool-sale">
+  <div class="card">
+    <div class="card-label">Original price</div>
+    <div class="field"><label>Price before discount (£)</label><input type="number" id="salePrice" placeholder="e.g. 79.99" oninput="calcSale()"></div>
+  </div>
+
+  <!-- CHANGE 4: sale/discount calculator -->
+  <div class="card">
+    <div class="card-label">Discount</div>
+    <div class="sale-pct-row">
+      <button class="sale-pct-btn" onclick="setSalePct(10,this)">10%</button>
+      <button class="sale-pct-btn" onclick="setSalePct(20,this)">20%</button>
+      <button class="sale-pct-btn" onclick="setSalePct(30,this)">30%</button>
+      <button class="sale-pct-btn" onclick="setSalePct(50,this)">50%</button>
+    </div>
+    <div class="field"><label>Or enter custom discount %</label><input type="number" id="saleCustomPct" placeholder="e.g. 35" oninput="setCustomSalePct()"></div>
+  </div>
+
+  <div class="sale-result-box" id="saleResult">
+    <div class="sale-final" id="saleFinalPrice">£0.00</div>
+    <div class="sale-final-lbl">price after discount</div>
+    <div class="sale-breakdown">
+      <div class="sale-card">
+        <div class="sale-card-val" id="saleOriginal" style="color:var(--muted)">£0.00</div>
+        <div class="sale-card-lbl">original</div>
+      </div>
+      <div class="sale-card">
+        <div class="sale-card-val" id="saleSaving" style="color:var(--sale)">£0.00</div>
+        <div class="sale-card-lbl">you save</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </main>
 
 <script>
-const AMBIGUOUS = new Set(['0','O','l','1','I','|']);
-let currentPassword = '';
-
-function buildPool(upper, lower, digits, symbols, exclAmbig) {
-  const UP  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const LO  = 'abcdefghijklmnopqrstuvwxyz';
-  const DI  = '0123456789';
-  const SY  = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-  let pool = '';
-  if (upper)   pool += UP;
-  if (lower)   pool += LO;
-  if (digits)  pool += DI;
-  if (symbols) pool += SY;
-  if (exclAmbig) pool = pool.split('').filter(c => !AMBIGUOUS.has(c)).join('');
-  return pool;
+// ── NAV ──────────────────────────────────────────────
+function toggleNav() {
+  document.getElementById('navBtn').classList.toggle('open');
+  document.getElementById('navDropdown').classList.toggle('open');
 }
-
-function secureRandInt(max) {
-  const arr = new Uint32Array(1);
-  let result;
-  do {
-    crypto.getRandomValues(arr);
-    result = arr[0];
-  } while (result >= Math.floor(0xFFFFFFFF / max) * max);
-  return result % max;
+function switchTool(id, icon, title, bg) {
+  document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+  document.getElementById('tool-' + id).classList.add('active');
+  document.getElementById('navIcon').textContent = icon;
+  document.getElementById('navIcon').style.background = bg;
+  document.getElementById('navTitle').textContent = title;
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('[data-tool="' + id + '"]').classList.add('active');
+  toggleNav();
 }
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = secureRandInt(i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+document.addEventListener('click', e => {
+  if (!document.querySelector('.nav-wrap').contains(e.target)) {
+    document.getElementById('navBtn').classList.remove('open');
+    document.getElementById('navDropdown').classList.remove('open');
   }
+});
+
+// ── PASSWORD ──────────────────────────────────────────
+const AMBIG = new Set(['0','O','l','1','I','|']);
+let currentPwd = '';
+
+function randInt(max) {
+  const a = new Uint32Array(1);
+  let r;
+  do { crypto.getRandomValues(a); r = a[0]; }
+  while (r >= Math.floor(0xFFFFFFFF / max) * max);
+  return r % max;
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) { const j = randInt(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; }
   return arr;
 }
-
-function generate() {
-  const upper   = document.getElementById('useUpper').checked;
-  const lower   = document.getElementById('useLower').checked;
-  const digits  = document.getElementById('useDigits').checked;
-  const symbols = document.getElementById('useSymbols').checked;
-  const excl    = document.getElementById('exclAmbig').checked;
-  const length  = parseInt(document.getElementById('lengthSlider').value);
-
-  const errorBox = document.getElementById('errorBox');
-  errorBox.classList.remove('visible');
-
-  if (!upper && !lower && !digits && !symbols) {
-    errorBox.textContent = 'Please enable at least one character type.';
-    errorBox.classList.add('visible');
-    return;
-  }
-
-  const UP  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const LO  = 'abcdefghijklmnopqrstuvwxyz';
-  const DI  = '0123456789';
-  const SY  = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-
-  let typePools = [];
-  if (upper)   typePools.push(UP);
-  if (lower)   typePools.push(LO);
-  if (digits)  typePools.push(DI);
-  if (symbols) typePools.push(SY);
-
-  if (excl) typePools = typePools.map(p => p.split('').filter(c => !AMBIGUOUS.has(c)).join('')).filter(p => p.length > 0);
-
-  if (length < typePools.length) {
-    errorBox.textContent = `Password length (${length}) must be at least ${typePools.length} to include every selected character type.`;
-    errorBox.classList.add('visible');
-    return;
-  }
-
-  const fullPool = buildPool(upper, lower, digits, symbols, excl);
-  let chars = typePools.map(p => p[secureRandInt(p.length)]);
-  while (chars.length < length) chars.push(fullPool[secureRandInt(fullPool.length)]);
+function generatePassword() {
+  const up = document.getElementById('useUpper').checked;
+  const lo = document.getElementById('useLower').checked;
+  const di = document.getElementById('useDigits').checked;
+  const sy = document.getElementById('useSymbols').checked;
+  const ex = document.getElementById('exclAmbig').checked;
+  const ln = parseInt(document.getElementById('lengthSlider').value);
+  const eb = document.getElementById('pwdError');
+  eb.classList.remove('visible');
+  if (!up && !lo && !di && !sy) { eb.textContent='Please enable at least one character type.'; eb.classList.add('visible'); return; }
+  const UP='ABCDEFGHIJKLMNOPQRSTUVWXYZ', LO='abcdefghijklmnopqrstuvwxyz', DI='0123456789', SY='!@#$%^&*()-_=+[]{}|;:,.<>?';
+  let pools=[];
+  if (up) pools.push(UP); if (lo) pools.push(LO); if (di) pools.push(DI); if (sy) pools.push(SY);
+  if (ex) pools=pools.map(p=>p.split('').filter(c=>!AMBIG.has(c)).join('')).filter(p=>p);
+  if (ln<pools.length) { eb.textContent=`Length (${ln}) must be at least ${pools.length} to include all selected types.`; eb.classList.add('visible'); return; }
+  const full=pools.join('');
+  let chars=pools.map(p=>p[randInt(p.length)]);
+  while (chars.length<ln) chars.push(full[randInt(full.length)]);
   shuffle(chars);
-
-  currentPassword = chars.join('');
-
-  const display = document.getElementById('pwdDisplay');
-  display.textContent = currentPassword;
-  display.classList.remove('empty');
-
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.textContent = 'Copy';
-  copyBtn.classList.remove('copied');
-
-  updateStrength(length, upper, lower, digits, symbols);
+  currentPwd=chars.join('');
+  const d=document.getElementById('pwdDisplay');
+  d.textContent=currentPwd; d.classList.remove('empty');
+  document.getElementById('copyBtn').textContent='Copy';
+  document.getElementById('copyBtn').classList.remove('copied');
+  updateStrength(ln,up,lo,di,sy);
 }
-
-function updateStrength(length, upper, lower, digits, symbols) {
-  const types = [upper, lower, digits, symbols].filter(Boolean).length;
-  let score = 0;
-  if (length >= 12) score++;
-  if (length >= 16) score++;
-  if (length >= 20) score++;
-  score += types;
-
-  let label, color, tips = [];
-  if (score <= 2)      { label = 'Weak';        color = '#f87171'; }
-  else if (score <= 4) { label = 'Fair';         color = '#fb923c'; }
-  else if (score <= 5) { label = 'Strong';       color = '#4ade80'; }
-  else                 { label = 'Very strong';  color = '#22d3ee'; }
-
-  if (length < 12)    tips.push('Increase length to at least 12 characters');
-  if (types < 3)      tips.push('Enable more character types for stronger passwords');
-  if (!symbols)       tips.push('Adding symbols greatly increases strength');
-
-  document.getElementById('strengthLabel').textContent = label;
-  document.getElementById('strengthDot').style.background = color;
-  document.getElementById('strengthLabel').style.color = color;
-
-  const tipsBox = document.getElementById('tipsBox');
-  if (tips.length > 0) {
-    tipsBox.innerHTML = tips.map(t => `<div class="tip-item">${t}</div>`).join('');
-    tipsBox.classList.add('visible');
-  } else {
-    tipsBox.classList.remove('visible');
-  }
+function updateStrength(len,up,lo,di,sy) {
+  const types=[up,lo,di,sy].filter(Boolean).length;
+  let score=0;
+  if(len>=12)score++; if(len>=16)score++; if(len>=20)score++;
+  score+=types;
+  let label,color,tips=[];
+  if(score<=2){label='Weak';color='#f87171';}
+  else if(score<=4){label='Fair';color='#fb923c';}
+  else if(score<=5){label='Strong';color='#4ade80';}
+  else{label='Very strong';color='#22d3ee';}
+  if(len<12) tips.push('Increase length to at least 12 characters');
+  if(types<3) tips.push('Enable more character types');
+  if(!sy) tips.push('Adding symbols greatly increases strength');
+  document.getElementById('strengthLabel').textContent=label;
+  document.getElementById('strengthLabel').style.color=color;
+  document.getElementById('strengthDot').style.background=color;
+  const tb=document.getElementById('pwdTips');
+  if(tips.length){tb.innerHTML=tips.map(t=>`<div class="tip-item-warn">${t}</div>`).join('');tb.classList.add('visible');}
+  else tb.classList.remove('visible');
 }
-
 function copyPassword() {
-  if (!currentPassword) return;
-  navigator.clipboard.writeText(currentPassword).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'Copy';
-      btn.classList.remove('copied');
-    }, 2000);
+  if (!currentPwd) return;
+  navigator.clipboard.writeText(currentPwd).then(()=>{
+    const b=document.getElementById('copyBtn');
+    b.textContent='Copied!'; b.classList.add('copied');
+    setTimeout(()=>{b.textContent='Copy';b.classList.remove('copied');},2000);
   });
 }
-
 function updateLength() {
-  const val = parseInt(document.getElementById('lengthSlider').value);
-  document.getElementById('lengthNum').textContent = val;
-  let hint = '';
-  if (val < 8)       hint = val + ' characters — very short, not recommended';
-  else if (val < 12) hint = val + ' characters — acceptable for low-risk accounts';
-  else if (val < 16) hint = val + ' characters — good length';
-  else if (val < 24) hint = val + ' characters — very good';
-  else               hint = val + ' characters — excellent';
-  document.getElementById('lengthHint').textContent = hint;
+  const v=parseInt(document.getElementById('lengthSlider').value);
+  document.getElementById('lengthNum').textContent=v;
+  const h=v<8?v+' characters — very short':v<12?v+' characters — acceptable':v<16?v+' characters — good':v<24?v+' characters — very good':v+' characters — excellent';
+  document.getElementById('lengthHint').textContent=h;
+}
+
+// ── CONVERTER (two-way, no swap) ──────────────────────
+function setCategory(cat,el) {
+  document.querySelectorAll('.unit-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['temp','dist','weight','cook'].forEach(c=>document.getElementById('cat-'+c).style.display=c===cat?'':'none');
+}
+
+// Temperature
+let _settingTemp=false;
+function twoWayTemp(side) {
+  if(_settingTemp) return;
+  _settingTemp=true;
+  const c=document.getElementById('tempC'), f=document.getElementById('tempF');
+  if(side==='c') {
+    const v=parseFloat(c.value);
+    f.value=isNaN(v)?'':((v*9/5)+32).toFixed(1);
+  } else {
+    const v=parseFloat(f.value);
+    c.value=isNaN(v)?'':((v-32)*5/9).toFixed(1);
+  }
+  _settingTemp=false;
+}
+
+// Distance
+let _settingDist=false;
+function twoWayDist(side) {
+  if(_settingDist) return;
+  _settingDist=true;
+  const km=document.getElementById('distKm'), mi=document.getElementById('distMi');
+  if(side==='km') {
+    const v=parseFloat(km.value);
+    mi.value=isNaN(v)?'':(v*0.621371).toFixed(3);
+  } else {
+    const v=parseFloat(mi.value);
+    km.value=isNaN(v)?'':(v/0.621371).toFixed(3);
+  }
+  _settingDist=false;
+}
+
+// Weight
+let _settingWeight=false;
+function twoWayWeight(side) {
+  if(_settingWeight) return;
+  _settingWeight=true;
+  const kg=document.getElementById('weightKg'), lbs=document.getElementById('weightLbs');
+  if(side==='kg') {
+    const v=parseFloat(kg.value);
+    lbs.value=isNaN(v)?'':(v*2.20462).toFixed(3);
+  } else {
+    const v=parseFloat(lbs.value);
+    kg.value=isNaN(v)?'':(v/2.20462).toFixed(3);
+  }
+  _settingWeight=false;
+}
+
+// Cooking
+const toMl={ml:1,l:1000,tsp:4.92892,tbsp:14.7868,cup:236.588,floz:29.5735};
+let _settingCook=false;
+function twoWayCook(side) {
+  if(_settingCook) return;
+  _settingCook=true;
+  const uA=document.getElementById('cookUnitA').value;
+  const uB=document.getElementById('cookUnitB').value;
+  const inA=document.getElementById('cookValA');
+  const inB=document.getElementById('cookValB');
+  if(side==='a') {
+    const v=parseFloat(inA.value);
+    if(isNaN(v)){inB.value='';} else { const r=(v*toMl[uA])/toMl[uB]; inB.value=r%1===0?r:r.toFixed(3); }
+  } else {
+    const v=parseFloat(inB.value);
+    if(isNaN(v)){inA.value='';} else { const r=(v*toMl[uB])/toMl[uA]; inA.value=r%1===0?r:r.toFixed(3); }
+  }
+  _settingCook=false;
+}
+
+// ── GROCERY ──────────────────────────────────────────
+function toBase(val,unit) {
+  if(unit==='g') return val/1000;
+  if(unit==='ml') return val/1000;
+  return val;
+}
+function compareGrocery() {
+  const aP=parseFloat(document.getElementById('aPrice').value);
+  const aW=parseFloat(document.getElementById('aWeight').value);
+  const aU=document.getElementById('aUnit').value;
+  const bP=parseFloat(document.getElementById('bPrice').value);
+  const bW=parseFloat(document.getElementById('bWeight').value);
+  const bU=document.getElementById('bUnit').value;
+  const win=document.getElementById('groceryWinner');
+  if(isNaN(aP)||isNaN(aW)||isNaN(bP)||isNaN(bW)||aW<=0||bW<=0){win.className='winner-box';document.getElementById('perGrid').style.display='none';return;}
+  const aBase=toBase(aW,aU),bBase=toBase(bW,bU);
+  const aPer=aP/aBase,bPer=bP/bBase;
+  const ul=(aU==='ml'||aU==='l')?'litre':'kg';
+  document.getElementById('aPer').textContent='£'+aPer.toFixed(2);
+  document.getElementById('bPer').textContent='£'+bPer.toFixed(2);
+  document.getElementById('perGrid').style.display='grid';
+  if(Math.abs(aPer-bPer)<0.001){
+    win.className='winner-box win-tie visible';
+    document.getElementById('groceryWinTitle').textContent='Same value';
+    document.getElementById('groceryWinSub').textContent='Both cost £'+aPer.toFixed(2)+' per '+ul;
+  } else if(aPer<bPer){
+    const s=((bPer-aPer)/bPer*100).toFixed(0);
+    win.className='winner-box win-a visible';
+    document.getElementById('groceryWinTitle').textContent='✓ Product A is better value';
+    document.getElementById('groceryWinSub').textContent=s+'% cheaper per '+ul+' — £'+aPer.toFixed(2)+' vs £'+bPer.toFixed(2);
+  } else {
+    const s=((aPer-bPer)/aPer*100).toFixed(0);
+    win.className='winner-box win-b visible';
+    document.getElementById('groceryWinTitle').textContent='✓ Product B is better value';
+    document.getElementById('groceryWinSub').textContent=s+'% cheaper per '+ul+' — £'+bPer.toFixed(2)+' vs £'+aPer.toFixed(2);
+  }
+}
+
+// ── TIP ──────────────────────────────────────────────
+let tipPct=20;
+function setTip(pct,el) {
+  tipPct=pct;
+  document.querySelectorAll('.btn-tip').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('customTip').value='';
+  calcTip();
+}
+function setCustomTip() {
+  const v=parseFloat(document.getElementById('customTip').value);
+  if(!isNaN(v)&&v>=0){tipPct=v;document.querySelectorAll('.btn-tip').forEach(b=>b.classList.remove('active'));calcTip();}
+}
+function updateSplit() {
+  const v=parseInt(document.getElementById('splitSlider').value);
+  document.getElementById('splitNum').textContent=v;
+  document.getElementById('splitHint').textContent=v===1?'No split — single person':'Split between '+v+' people';
+  calcTip();
+}
+function calcTip() {
+  const bill=parseFloat(document.getElementById('billAmount').value);
+  const ppl=parseInt(document.getElementById('splitSlider').value);
+  const res=document.getElementById('tipResults');
+  const preview=document.getElementById('tipPreview');
+  if(isNaN(bill)||bill<=0){res.style.display='none';preview.classList.remove('visible');return;}
+  const tip=bill*tipPct/100,total=bill+tip;
+  // tip preview
+  document.getElementById('tipPreviewVal').textContent='£'+tip.toFixed(2);
+  preview.classList.add('visible');
+  // summary
+  res.style.display='block';
+  document.getElementById('tipAmount').textContent='£'+tip.toFixed(2);
+  document.getElementById('totalAmount').textContent='£'+total.toFixed(2);
+  document.getElementById('perPersonTip').textContent='£'+(tip/ppl).toFixed(2);
+  document.getElementById('perPersonTotal').textContent='£'+(total/ppl).toFixed(2);
+}
+
+// ── SALE CALCULATOR ──────────────────────────────────
+let salePct = 0;
+function setSalePct(pct,el) {
+  salePct=pct;
+  document.querySelectorAll('.sale-pct-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('saleCustomPct').value='';
+  calcSale();
+}
+function setCustomSalePct() {
+  const v=parseFloat(document.getElementById('saleCustomPct').value);
+  if(!isNaN(v)&&v>=0&&v<=100){salePct=v;document.querySelectorAll('.sale-pct-btn').forEach(b=>b.classList.remove('active'));calcSale();}
+}
+function calcSale() {
+  const price=parseFloat(document.getElementById('salePrice').value);
+  const box=document.getElementById('saleResult');
+  if(isNaN(price)||price<=0||salePct<=0){box.classList.remove('visible');return;}
+  const saving=price*salePct/100;
+  const final=price-saving;
+  box.classList.add('visible');
+  document.getElementById('saleFinalPrice').textContent='£'+final.toFixed(2);
+  document.getElementById('saleOriginal').textContent='£'+price.toFixed(2);
+  document.getElementById('saleSaving').textContent='£'+saving.toFixed(2);
 }
 </script>
 </body>
