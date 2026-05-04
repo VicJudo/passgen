@@ -319,12 +319,30 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       </div>
     </div>
 
-    <!-- DISTANCE: two live inputs -->
+    <!-- DISTANCE: metric/imperial dropdowns, two live inputs -->
     <div id="cat-dist" style="display:none">
       <div class="two-way-grid">
-        <div class="field" style="margin-bottom:0"><label>Kilometres (km)</label><input type="number" id="distKm" placeholder="km" oninput="twoWayDist('km')"></div>
+        <div class="field" style="margin-bottom:0">
+          <label>Metric</label>
+          <select id="distMetricUnit" onchange="twoWayDist('metric')" style="color:#f0f2f5;">
+            <option value="mm" style="color:#f0f2f5;background:#1e2330;">Millimetres (mm)</option>
+            <option value="cm" style="color:#f0f2f5;background:#1e2330;">Centimetres (cm)</option>
+            <option value="m" style="color:#f0f2f5;background:#1e2330;">Metres (m)</option>
+            <option value="km" style="color:#f0f2f5;background:#1e2330;">Kilometres (km)</option>
+          </select>
+          <input type="number" id="distMetricVal" placeholder="Amount" oninput="twoWayDist('metric')" style="margin-top:8px;">
+        </div>
         <div class="two-way-arrow">⇄</div>
-        <div class="field" style="margin-bottom:0"><label>Miles (mi)</label><input type="number" id="distMi" placeholder="mi" oninput="twoWayDist('mi')"></div>
+        <div class="field" style="margin-bottom:0">
+          <label>Imperial</label>
+          <select id="distImperialUnit" onchange="twoWayDist('imperial')" style="color:#f0f2f5;">
+            <option value="in" style="color:#f0f2f5;background:#1e2330;">Inches (in)</option>
+            <option value="ft" style="color:#f0f2f5;background:#1e2330;">Feet (ft)</option>
+            <option value="yd" style="color:#f0f2f5;background:#1e2330;">Yards (yd)</option>
+            <option value="mi" style="color:#f0f2f5;background:#1e2330;">Miles (mi)</option>
+          </select>
+          <input type="number" id="distImperialVal" placeholder="Amount" oninput="twoWayDist('imperial')" style="margin-top:8px;">
+        </div>
       </div>
     </div>
 
@@ -615,17 +633,23 @@ function twoWayTemp(side) {
 }
 
 // Distance
+const toMetreFrom = { mm:0.001, cm:0.01, m:1, km:1000, in:0.0254, ft:0.3048, yd:0.9144, mi:1609.344 };
 let _settingDist=false;
 function twoWayDist(side) {
   if(_settingDist) return;
   _settingDist=true;
-  const km=document.getElementById('distKm'), mi=document.getElementById('distMi');
-  if(side==='km') {
-    const v=parseFloat(km.value);
-    mi.value=isNaN(v)?'':(v*0.621371).toFixed(3);
+  const mUnit=document.getElementById('distMetricUnit').value;
+  const iUnit=document.getElementById('distImperialUnit').value;
+  const mIn=document.getElementById('distMetricVal');
+  const iIn=document.getElementById('distImperialVal');
+  if(side==='metric') {
+    const v=parseFloat(mIn.value);
+    if(isNaN(v)){iIn.value='';}
+    else { const metres=v*toMetreFrom[mUnit]; const r=metres/toMetreFrom[iUnit]; iIn.value=parseFloat(r.toFixed(6)); }
   } else {
-    const v=parseFloat(mi.value);
-    km.value=isNaN(v)?'':(v/0.621371).toFixed(3);
+    const v=parseFloat(iIn.value);
+    if(isNaN(v)){mIn.value='';}
+    else { const metres=v*toMetreFrom[iUnit]; const r=metres/toMetreFrom[mUnit]; mIn.value=parseFloat(r.toFixed(6)); }
   }
   _settingDist=false;
 }
