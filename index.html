@@ -61,7 +61,7 @@ body {
 .nav-item:hover { background:rgba(255,255,255,.04); }
 .nav-item.active { background:rgba(255,255,255,.06); }
 .nav-item-label { font-size:15px; font-weight:500; color:var(--text); }
-.nav-item-sub { font-size:12px; color:var(--muted); font-family:var(--mono); margin-left:auto; }
+.nav-item-sub { font-size:12px; color:var(--muted); font-family:var(--mono); margin-left:auto; text-align:right; }
 
 /* MAIN */
 main { width:100%; max-width:480px; padding:16px 16px 0; display:flex; flex-direction:column; gap:14px; }
@@ -222,7 +222,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
     <div class="nav-item" data-tool="converter" onclick="switchTool('converter','🌡️','Unit converter','rgba(34,211,238,.15)')">
       <div class="nav-icon" style="background:rgba(34,211,238,.15)">🌡️</div>
       <span class="nav-item-label">Unit converter</span>
-      <span class="nav-item-sub">temp · dist · weight · cooking</span>
+      <span class="nav-item-sub">temp · dist · weight<br>cooking · naval · shoes</span>
     </div>
     <div class="nav-item" data-tool="grocery" onclick="switchTool('grocery','🛒','Grocery comparator','rgba(251,146,60,.15)')">
       <div class="nav-icon" style="background:rgba(251,146,60,.15)">🛒</div>
@@ -248,7 +248,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
 <div class="tool active" id="tool-password">
   <div class="card">
     <div class="card-label">Generated password</div>
-    <!-- CHANGE 1: reload button next to output -->
     <div class="pwd-header">
       <div class="pwd-header-content">
         <div class="pwd-display empty" id="pwdDisplay">Tap generate to create a password</div>
@@ -311,6 +310,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       <div class="unit-tab" onclick="setCategory('dist',this)">Distance</div>
       <div class="unit-tab" onclick="setCategory('weight',this)">Weight</div>
       <div class="unit-tab" onclick="setCategory('cook',this)">Cooking</div>
+      <!-- NEW TABS -->
+      <div class="unit-tab" onclick="setCategory('naval',this)">Naval</div>
+      <div class="unit-tab" onclick="setCategory('shoes',this)">Shoes</div>
     </div>
 
     <!-- TEMPERATURE: two live inputs -->
@@ -322,7 +324,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       </div>
     </div>
 
-    <!-- DISTANCE: metric/imperial dropdowns, two live inputs -->
+    <!-- DISTANCE -->
     <div id="cat-dist" style="display:none">
       <div class="two-way-grid">
         <div class="field" style="margin-bottom:0">
@@ -349,7 +351,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       </div>
     </div>
 
-    <!-- WEIGHT: metric/imperial dropdowns, two live inputs -->
+    <!-- WEIGHT -->
     <div id="cat-weight" style="display:none">
       <div class="two-way-grid">
         <div class="field" style="margin-bottom:0">
@@ -375,7 +377,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
       </div>
     </div>
 
-    <!-- COOKING: dropdown + two live inputs -->
+    <!-- COOKING -->
     <div id="cat-cook" style="display:none">
       <div class="two-way-grid">
         <div class="field" style="margin-bottom:0">
@@ -405,6 +407,53 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
         </div>
       </div>
     </div>
+
+    <!-- NEW: NAVAL -->
+    <div id="cat-naval" style="display:none">
+      <div class="card-label" style="margin-bottom:12px;">Distance</div>
+      <div class="two-way-grid" style="margin-bottom:24px;">
+        <div class="field" style="margin-bottom:0">
+          <label>Nautical Miles (NM)</label>
+          <input type="number" id="navNm" placeholder="NM" oninput="twoWayNavalDist('nm')">
+        </div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0">
+          <label>Kilometres (km)</label>
+          <input type="number" id="navKm" placeholder="km" oninput="twoWayNavalDist('km')">
+        </div>
+      </div>
+
+      <div class="card-label" style="margin-bottom:12px;">Speed</div>
+      <div class="two-way-grid">
+        <div class="field" style="margin-bottom:0">
+          <label>Nœud / Knots (kt)</label>
+          <input type="number" id="navKt" placeholder="kt" oninput="twoWayNavalSpeed('kt')">
+        </div>
+        <div class="two-way-arrow">⇄</div>
+        <div class="field" style="margin-bottom:0">
+          <label>km/h</label>
+          <input type="number" id="navKmh" placeholder="km/h" oninput="twoWayNavalSpeed('kmh')">
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: SHOES -->
+    <div id="cat-shoes" style="display:none">
+      <p class="note" style="margin-bottom:16px; padding:0; text-align:left;">Approximate adult sizing. Type in any field to update the others.</p>
+      <div class="field">
+        <label>France / Europe (EUR)</label>
+        <input type="number" id="shoeFr" placeholder="e.g. 42" oninput="syncShoes('fr')">
+      </div>
+      <div class="field">
+        <label>UK</label>
+        <input type="number" id="shoeUk" placeholder="e.g. 8" oninput="syncShoes('uk')">
+      </div>
+      <div class="field">
+        <label>US</label>
+        <input type="number" id="shoeUs" placeholder="e.g. 9" oninput="syncShoes('us')">
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -469,7 +518,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
     <div class="field"><label>Or enter custom %</label><input type="number" id="customTip" placeholder="e.g. 12" oninput="setCustomTip()"></div>
   </div>
 
-  <!-- CHANGE 3: tip amount preview between percentage and split -->
   <div class="tip-preview" id="tipPreview">
     <span class="tip-preview-lbl">Tip amount</span>
     <span class="tip-preview-val" id="tipPreviewVal">£0.00</span>
@@ -501,7 +549,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; h
     <div class="field"><label>Price before discount (£)</label><input type="number" id="salePrice" placeholder="e.g. 79.99" oninput="calcSale()"></div>
   </div>
 
-  <!-- CHANGE 4: sale/discount calculator -->
   <div class="card">
     <div class="card-label">Discount</div>
     <div class="sale-pct-row">
@@ -634,7 +681,8 @@ function updateLength() {
 function setCategory(cat,el) {
   document.querySelectorAll('.unit-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  ['temp','dist','weight','cook'].forEach(c=>document.getElementById('cat-'+c).style.display=c===cat?'':'none');
+  // ADDED NAVAL AND SHOES HERE
+  ['temp','dist','weight','cook', 'naval', 'shoes'].forEach(c=>document.getElementById('cat-'+c).style.display=c===cat?'':'none');
 }
 
 // Temperature
@@ -715,6 +763,77 @@ function twoWayCook(side) {
     if(isNaN(v)){inA.value='';} else { const r=(v*toMl[uB])/toMl[uA]; inA.value=r%1===0?r:r.toFixed(3); }
   }
   _settingCook=false;
+}
+
+// Naval - Distance
+let _settingNavalDist=false;
+function twoWayNavalDist(side) {
+  if(_settingNavalDist) return;
+  _settingNavalDist=true;
+  const nmIn = document.getElementById('navNm');
+  const kmIn = document.getElementById('navKm');
+  if(side==='nm') {
+    const v = parseFloat(nmIn.value);
+    kmIn.value = isNaN(v) ? '' : parseFloat((v * 1.852).toFixed(4));
+  } else {
+    const v = parseFloat(kmIn.value);
+    nmIn.value = isNaN(v) ? '' : parseFloat((v / 1.852).toFixed(4));
+  }
+  _settingNavalDist=false;
+}
+
+// Naval - Speed
+let _settingNavalSpeed=false;
+function twoWayNavalSpeed(side) {
+  if(_settingNavalSpeed) return;
+  _settingNavalSpeed=true;
+  const ktIn = document.getElementById('navKt');
+  const kmhIn = document.getElementById('navKmh');
+  if(side==='kt') {
+    const v = parseFloat(ktIn.value);
+    kmhIn.value = isNaN(v) ? '' : parseFloat((v * 1.852).toFixed(4));
+  } else {
+    const v = parseFloat(kmhIn.value);
+    ktIn.value = isNaN(v) ? '' : parseFloat((v / 1.852).toFixed(4));
+  }
+  _settingNavalSpeed=false;
+}
+
+// Shoes 
+let _settingShoes = false;
+function syncShoes(source) {
+  if(_settingShoes) return;
+  _settingShoes = true;
+  const frIn = document.getElementById('shoeFr');
+  const ukIn = document.getElementById('shoeUk');
+  const usIn = document.getElementById('shoeUs');
+  let ukVal = 0;
+
+  if (source === 'fr') {
+    const fr = parseFloat(frIn.value);
+    if (isNaN(fr)) { ukIn.value=''; usIn.value=''; }
+    else {
+      ukVal = (fr - 32) / 1.25;
+      ukIn.value = parseFloat(ukVal.toFixed(2));
+      usIn.value = parseFloat((ukVal + 1).toFixed(2));
+    }
+  } else if (source === 'uk') {
+    const uk = parseFloat(ukIn.value);
+    if (isNaN(uk)) { frIn.value=''; usIn.value=''; }
+    else {
+      frIn.value = parseFloat(((uk * 1.25) + 32).toFixed(2));
+      usIn.value = parseFloat((uk + 1).toFixed(2));
+    }
+  } else if (source === 'us') {
+    const us = parseFloat(usIn.value);
+    if (isNaN(us)) { frIn.value=''; ukIn.value=''; }
+    else {
+      ukVal = us - 1;
+      ukIn.value = parseFloat(ukVal.toFixed(2));
+      frIn.value = parseFloat(((ukVal * 1.25) + 32).toFixed(2));
+    }
+  }
+  _settingShoes = false;
 }
 
 // ── GROCERY ──────────────────────────────────────────
